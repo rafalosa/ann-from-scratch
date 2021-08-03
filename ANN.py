@@ -35,18 +35,28 @@ class Network:
             self._weight_sets.append(np.reshape(weights, (self._layers[i+1].nodes, self._layers[i].nodes)))
             self._bias_sets.append(np.transpose(np.random.randn(self._layers[i+1].nodes)))
 
-    def forwardPass(self, data: np.ndarray):
-
+    def forwardPass(self, data: np.ndarray) -> (np.ndarray, list):
         result = data
+
+        result_sets = []
 
         for weights, bias in zip(self._weight_sets, self._bias_sets):
 
-            result = np.dot(weights, result) + bias
+            result = np.dot(weights, result)
+            bias_matrix = np.transpose(np.reshape(np.tile(bias, result.shape[1]), (result.shape[1],result.shape[0])))
+            result += bias_matrix
             result = self._activation(result)
+            result_sets.append(result)
 
-        return softMax(result)
+        return softMax(result), result_sets
 
     def calculateLoss(self, data: np.ndarray):
+
+        return
+
+    def backPropagation(self, result: np.ndarray, labels: np.ndarray):
+
+
 
         return
 
@@ -84,7 +94,6 @@ def softMax(vec: np.ndarray) -> float:
     mod = np.exp(vec)
     return mod/np.sum(mod)
 
-
 if __name__ == "__main__":
 
     train_data = pd.read_csv("data/mnist_train.csv")
@@ -94,15 +103,14 @@ if __name__ == "__main__":
     test_data = np.transpose(np.array(test_data))
 
     learning_rate = .1
-    nodesW1 = 10
-    nodesW2 = 10
+    examples = 40
+    train = train_data[1:, :examples]
+    tran_data_labels = train_data[0, :examples]
 
-    ann = Network(785, 10, 10, 1, sigmoid)
+    ann = Network(784, 10, 10, 1, sigmoid)
 
-    train_data = train_data[:, 1]
-
-    res = ann.forwardPass(train_data)
-    print(res)
+    res, res2 = ann.forwardPass(train)
+    print(len(res2))
 
     # for obj in ann._weight_sets:
     #
