@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 # todo: Add a possibility to save the state of the network and add some tools to test against custom data.
 
@@ -25,17 +26,9 @@ class MLP:  # A standard multi layer perceptron.
 
         self._output_layer = MLP.Layer(nodes_output, layers + 1, parent=self._hidden_layers[-1])
         self._layers.append(self._output_layer)
-
         self._weight_sets = []
         self._bias_sets = []
 
-        for i in range(len(self._layers) - 1):
-
-            np.random.seed(100)
-            weights = np.random.rand(self._layers[i].nodes * self._layers[i+1].nodes) - .5
-            self._weight_sets.append(np.reshape(weights, (self._layers[i+1].nodes, self._layers[i].nodes)))
-            np.random.seed(100)
-            self._bias_sets.append(np.transpose(np.random.rand(self._layers[i+1].nodes) - .5))
 
     def forwardPass(self, data: np.ndarray) -> (np.ndarray, list):
         result_a = data
@@ -93,7 +86,39 @@ class MLP:  # A standard multi layer perceptron.
 
     def getPredictions(self, data):
         result, _ = self.forwardPass(data)
-        return np.nonzero(np.transpose(result == np.amax(result, 0)))
+        return np.nonzero(np.transpose(result == np.amax(result, 0)))[1]
+
+    def randomizeWeights(self):
+
+        for i in range(len(self._layers) - 1):
+            weights = np.random.rand(self._layers[i].nodes * self._layers[i + 1].nodes) - .5
+            self._weight_sets.append(np.reshape(weights, (self._layers[i + 1].nodes, self._layers[i].nodes)))
+            self._bias_sets.append(np.transpose(np.random.rand(self._layers[i + 1].nodes) - .5))
+
+    def saveNetwork(self, filepath):
+
+        rows = []
+
+        for weight_set, bias_set in zip(self._weight_sets, self._bias_sets):
+            rows.append([np.array(weight_set, dtype=object), np.array(bias_set, dtype=object)])
+
+        data_frame = pd.DataFrame(rows, columns=['Weights', 'Bias'])
+        data_frame.to_json(filepath)
+
+    def loadNetwork(self, filepath):
+
+        network_data = pd.read_json(filepath)
+
+        if len(network_data['Weights']) != len(self._layers) - 1:  # Should also check for number of nodes, but
+            # since this is purely educational script, I didn't bother.
+            raise AttributeError(f"Loaded data does not match current model.")
+
+        self._weight_sets = []
+        self._bias_sets = []
+
+        for weight_set, bias_set in zip(network_data['Weights'], network_data['Bias']):
+            self._weight_sets.append(weight_set)
+            self._bias_sets.append(bias_set)
 
     class Layer:  # This class is redundant, but I left it for clarity. Initially I wanted to store weights and
         # biases associated with each layer in this object, but I found it not very intuitive, as each weight set is

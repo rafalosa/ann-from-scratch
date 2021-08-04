@@ -1,19 +1,32 @@
+import ann
 import numpy as np
 import pandas as pd
-import ann
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('TkAgg')
 
-train_data = pd.read_csv("data/mnist_train.csv")
 test_data = pd.read_csv("data/mnist_test.csv")
-
-train_data = np.transpose(np.array(train_data))
 test_data = np.transpose(np.array(test_data))
 
-examples = 10000
-train = train_data[1:, :examples] / 255.
-train_data_labels = train_data[0, :examples]
+data = test_data[1:, :] / 255.
+labels = test_data[0, :]
 
-learning_rate = 1.4
+examples = 50000
 
-net = ann.MLP(784, 10, 10, 3, ann.sigmoid, ann.sigmoidPrime)
+net = ann.MLP(784, 10, 10, 1, ann.sigmoid, ann.sigmoidPrime)
 
-net.train(train, train_data_labels, 500, 0.65, learning_rate)
+net.loadNetwork('model data/net.json')
+
+chosen_image = np.random.randint(0, labels.shape[0] - 1)
+im_size = int(np.sqrt(784))
+
+predicted = net.getPredictions(np.reshape(data[:, chosen_image], (784, 1)))
+predictions = net.getPredictions(data)
+accuracy = np.sum(predictions == labels)/labels.shape[0]
+
+print(f'Expected number: {labels[chosen_image]}')
+print(f'Predicted number: {predicted}')
+print(f'Accuracy across the entire testing dataset: {accuracy * 100}%')
+
+plt.imshow(np.reshape(data[:, chosen_image], (im_size, im_size)), cmap='gray')
+plt.show()
