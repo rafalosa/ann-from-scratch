@@ -2,20 +2,14 @@ import ann
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib
-matplotlib.use('TkAgg')
 
 test_data = pd.read_csv("data/mnist_test.csv")
 test_data = np.transpose(np.array(test_data))
 
 data = test_data[1:, :] / 255.
 labels = test_data[0, :]
-
-examples = 50000
-
-net = ann.MLP(784, 10, 10, 1, ann.sigmoid, ann.sigmoidPrime)
-
-net.loadNetwork('model data/net.json')
+net = ann.MLP(784, 10, 10, 2, ann.sigmoid, ann.sigmoidPrime)
+net.loadNetwork('model data/net2.json')
 
 chosen_image = np.random.randint(0, labels.shape[0] - 1)
 im_size = int(np.sqrt(784))

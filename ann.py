@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
 
-# todo: Add a possibility to save the state of the network and add some tools to test against custom data.
-
 
 class MLP:  # A standard multi layer perceptron.
 
@@ -28,7 +26,6 @@ class MLP:  # A standard multi layer perceptron.
         self._layers.append(self._output_layer)
         self._weight_sets = []
         self._bias_sets = []
-
 
     def forwardPass(self, data: np.ndarray) -> (np.ndarray, list):
         result_a = data
@@ -108,10 +105,18 @@ class MLP:  # A standard multi layer perceptron.
     def loadNetwork(self, filepath):
 
         network_data = pd.read_json(filepath)
+        total = len(network_data.index) + 1
+        hidden = total - 2
+        nodes = [0 for i in range(total)]
 
-        if len(network_data['Weights']) != len(self._layers) - 1:  # Should also check for number of nodes, but
-            # since this is purely educational script, I didn't bother.
-            raise AttributeError(f"Loaded data does not match current model.")
+        for i, weight_set in enumerate(network_data['Weights']):
+            nodes[i] = len(weight_set[0])
+            nodes[i+1] = len(weight_set)
+
+        check_nodes = [not(node_data == node_network.nodes) for node_data, node_network in zip(nodes, self._layers)]
+        if len(network_data['Weights']) != len(self._layers) - 1 or any(check_nodes):
+            raise AttributeError(f"Loaded data does not match current model. Network should have {hidden} hidden"
+                                 f" layers, {total} layers in total. Number of nodes should be {nodes}.")
 
         self._weight_sets = []
         self._bias_sets = []

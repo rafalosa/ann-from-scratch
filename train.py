@@ -14,9 +14,9 @@ train_data_labels = train_data[0, :examples]
 
 learning_rate = .4
 
-net = ann.MLP(784, 10, 10, 1, ann.sigmoid, ann.sigmoidPrime)
+net = ann.MLP(784, 10, 10, 2, ann.sigmoid, ann.sigmoidPrime)
 
 net.randomizeWeights()
 
-net.train(train, train_data_labels, 1000, 0.9, learning_rate)
-net.saveNetwork('model data/net.json')
+net.train(train, train_data_labels, 10000, 0.95, learning_rate)
+net.saveNetwork('model data/net2.json')
